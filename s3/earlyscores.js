@@ -8,6 +8,7 @@ const API = "https://ss-api.classly.co/scores"
 
 var STATUS = {
     "ERROR": generalError,
+    "NO_SCORES": generalError,
     "LOGIN_ERROR": loginError,
     "SCORE_ERROR": scoreError,
     "AP_NUMBER_ERROR": apNumberError,
