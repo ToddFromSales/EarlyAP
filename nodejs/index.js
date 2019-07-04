@@ -263,11 +263,11 @@ app.post("/scores", function (req, res) {
 });
 
 app.get('/', function (req, res) {
-    res.status(200).send("Early Scores API " + VERSION)
+    res.status(200).send("Thanks for choosing Classly ScoreStar, powered by Early Scores. This is Early Scores API version " + VERSION)
 });
 
 app.post('/', function (req, res) {
-    res.status(200).send("Early Scores API " + VERSION)
+    res.status(200).send("Thanks for choosing Classly ScoreStar, powered by Early Scores. This is Early Scores API version " + VERSION)
 });
 
 let dormant = false;
