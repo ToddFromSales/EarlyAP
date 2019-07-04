@@ -4,7 +4,7 @@
  * AP is a trademark registered by the College Board, which is not affiliated with, and does not endorse, EarlyScores. 
  */
 
-const API = "https://api.earlyscores.com/scores"
+const API = "https://ss-api.classly.co/scores"
 
 var STATUS = {
     "ERROR": generalError,
