@@ -1,15 +1,15 @@
 /**
  * EARLYSCORES API | June 19, 2018
  * Created by Jacob B.
- * AP is a trademark registered by the College Board, which is not affiliated with, and does not endorse, EarlyScores. 
+ * AP is a trademark registered by the College Board, which is not affiliated with, and does not endorse, EarlyScores.
  */
 
 const API = "https://ss-api.classly.co/scores"
 
 var STATUS = {
     "ERROR": generalError,
-    "NO_SCORES": generalError,
     "LOGIN_ERROR": loginError,
+    "NO_SCORES": noScoreError,
     "SCORE_ERROR": scoreError,
     "AP_NUMBER_ERROR": apNumberError,
     "AP_NUMBER_REQUEST": apNumber,
@@ -18,7 +18,8 @@ var STATUS = {
     "TOS_REQUEST": tosRequest,
     "TOS_ACCEPTED": tosAccepted,
     "TIMEOUT": timeout,
-    "DOWN": down
+    "DOWN": down,
+    "HOLD": hold
 }
 
 function message(message) {
@@ -35,7 +36,7 @@ function foreverMessage(message) {
 
 
 function scores(response) {
-    ga('send', 'event', 'login', 'scores');
+    //ga('send', 'event', 'login', 'scores');
     $(".loading").hide();
     $(".error-message").hide();
     $(".form-container").hide();
@@ -46,7 +47,7 @@ function scores(response) {
 
 
 function apNumber(response) {
-    ga('send', 'event', 'login', 'ap_number');
+    //ga('send', 'event', 'login', 'ap_number');
     $(".loading").hide();
 
     $(".ap-number-confirmation-container").show();
@@ -65,35 +66,50 @@ function apNumber(response) {
     number.find("#verifyAccount_userProfile_person_aiCode").attr("type", "text");
 
     $(".ap-number-form-container").html(number);
+    var fieldsets = $(".ap-number-form-container").find("fieldset").toArray();
+    for (var i = 0; i < 3; i++) {
+        fieldsets[i].remove();
+    }
 
     $(".ap-number-form-container").find(".box-padding-5").hide();
     $(".ap-number-form-container").find("[name='token']").val("");
 }
 
 $(".ap-number-confirm").click(function () {
-    ga('send', 'event', 'ap_number', 'confirm');
+    //ga('send', 'event', 'ap_number', 'confirm');
     $(".ap-number-confirmation-container").hide();
     $(".ap-number-container").show();
 });
 
 $(".cancel-ap-number-confirm").click(function (e) {
-    ga('send', 'event', 'ap_number', 'cancel');
+    //ga('send', 'event', 'ap_number', 'cancel');
     $(".ap-number-confirmation-container").hide();
     $(".form-container").show();
 });
 
 function loginError(response) {
-    ga('send', 'event', 'scores', 'login_error');
+    //ga('send', 'event', 'scores', 'login_error');
     generalError(response);
 }
 
 function scoreError(response) {
-    ga('send', 'event', 'scores', 'score_error');
+    //ga('send', 'event', 'scores', 'score_error');
     generalError(response);
 }
 
+function noScoreError(response) {
+    //ga('send', 'event', 'scores', 'no_score_error');
+    $(".loading").hide();
+    $(".error-message").text(response.message + " Please try our proxy: https://earlyscores.com/proxy.html").show();
+    $(".form-container").show();
+}
+
 function apNumberError(response) {
-    ga('send', 'event', 'scores', 'ap_number_error');
+    //ga('send', 'event', 'scores', 'ap_number_error');
+    generalError(response);
+}
+
+function hold(response) {
     generalError(response);
 }
 
@@ -105,21 +121,22 @@ function generalError(response) {
 }
 
 function unknownError(response) {
-    ga('send', 'event', 'scores', 'unknown_error');
+    //ga('send', 'event', 'scores', 'unknown_error');
     $(".loading").hide();
-    $(".error-message").text("A success response was received from the server but we can not process it.").show();
+    var response = JSON.stringify(response);
+    $(".error-message").text("A success response was received from the server but we can not process it. Please send this to support@earlyscores.com: "+response).show();
     $(".form-container").show();
 }
 
 function timeout(response) {
-    ga('send', 'event', 'scores', 'timeout');
+    //ga('send', 'event', 'scores', 'timeout');
     $(".loading").hide();
     $(".error-message").text("The College Board website is down. Please try fetching your scores again.").show();
     $(".form-container").show();
 }
 
 function down(response) {
-    ga('send', 'event', 'scores', 'down');
+    //ga('send', 'event', 'scores', 'down');
     $(".loading").hide();
     $(".error-message").text("The College Board website is down. Please try fetching your scores again.").show();
     $(".form-container").show();
@@ -158,20 +175,11 @@ function validateTest(field, message, invalidation) {
 
 function validateAPNumberForm() {
     scrollToError = null;
-    var valid = validate("#inputFirstName", "No first name entered.");
-    valid = valid && validate("#inputLastName", "No last name entered.");
-    valid = valid && validate("#inputAddress1", "No primary address entered.");
-    valid = valid && validate("#inputCity", "No city entered.");
-    valid = valid && validate("#inputState", "No state entered.");
-    valid = valid && validate("#inputZip", "No zip code entered.");
-    valid = valid && validate("#inputEmail", "No email entered.");
-    valid = valid && validateTest("#inputEmailConfirm", "Input confirmation does not match", 
-                          $("#inputEmailConfirm").val() == "" || $("#inputEmailConfirm").val() != $("#inputEmail").val());
-    valid = valid && validate("#verifyAccount_userProfile_person_aiCode", "Please enter a highschool code.");
+    var valid = true;
     valid = valid && validate("#inputAPYear", "AP Year is required.");
-    valid = valid && validateTest("#inputAPNumber", "You must enter a student ID or an AP number", 
+    valid = valid && validateTest("#inputAPNumber", "You must enter a student ID or an AP number",
                           $("#inputAPNumber").val() == "" && $("#inputStudentID").val() == "");
-    valid = valid && validateTest("#inputStudentID", "You must enter a student ID or an AP number", 
+    valid = valid && validateTest("#inputStudentID", "You must enter a student ID or an AP number",
                           $("#inputAPNumber").val() == "" && $("#inputStudentID").val() == "");
     if (scrollToError) {
         $('html, body').animate({
@@ -179,18 +187,18 @@ function validateAPNumberForm() {
         }, 150);
     }
     scrollToError = null;
-    
+
     return valid;
 }
 
 function tosRequest(resp) {
-    ga('send', 'event', 'scores', 'tos_request');
+    //ga('send', 'event', 'scores', 'tos_request');
     $(".loading").hide();
     $(".tos-request").show();
 }
 
 function tosAccepted(resp) {
-    ga('send', 'event', 'scores', 'tos_accept');
+    //ga('send', 'event', 'scores', 'tos_accept');
     message("Terms of service were accepted. Attempting to log show scores.");
     var username = $("input[name=username]");
     var password = $("input[name=password]");
@@ -206,7 +214,7 @@ $(".accept-terms-check").change(function () {
 })
 
 $(".tos-request-accept").click(function () {
-    ga('send', 'event', 'tos', 'tos_accepted');
+    //ga('send', 'event', 'tos', 'tos_accepted');
     if (!$(".accept-terms-check").is(":checked")) {
         $(".tos-request-accept").addClass("disabled");
         return;
@@ -221,7 +229,7 @@ $(".tos-request-accept").click(function () {
 });
 
 $(".tos-request-cancel").click(function () {
-    ga('send', 'event', 'tos', 'tos_cancelled');
+    //ga('send', 'event', 'tos', 'tos_cancelled');
     $(".tos-request").hide();
     $(".form-container").show();
 });
@@ -233,16 +241,16 @@ function sendAPIRequest(data) {
         url: API,
         data: JSON.stringify(data),
         success: function (r) {
-            ga('send', 'event', 'api_request', 'success');
+            //ga('send', 'event', 'api_request', 'success');
             if (typeof r === "string") r = JSON.parse(r);
             if (STATUS[r.status]) {
                 STATUS[r.status](r)
             } else {
-                unknownError()
+                unknownError(r)
             }
         },
         error: function (_, status, error) {
-            ga('send', 'event', 'api_request', 'exception');
+            //ga('send', 'event', 'api_request', 'exception');
             $(".loading").hide();
             $(".error-message").text("There was an error connecting to the EarlyScores servers. Please try again.").show();
             $(".form-container").show();
@@ -253,13 +261,13 @@ function sendAPIRequest(data) {
 }
 
 function login(username, password) {
-    ga('send', 'event', 'scores', 'login');
+    //ga('send', 'event', 'scores', 'login');
     var data = {username: username.val(), password: password.val()}
     sendAPIRequest(data)
 }
 
 function apNumberSave(response) {
-    ga('send', 'event', 'scores', 'ap_number_saved');
+    //ga('send', 'event', 'scores', 'ap_number_saved');
     message("Your AP number has been saved successfully. Attempting to log in again.");
     var username = $("input[name=username]");
     var password = $("input[name=password]");
@@ -300,7 +308,7 @@ $(".ap-number-form-actions .submit-ap-number").click(function (e) {
     if (!validateAPNumberForm()) {
         return;
     }
-    
+
     $(".ap-number-container").hide();
     var form_values = $(".ap-number-form-container").serialize();
     $(".ap-number-form-container").html("");
